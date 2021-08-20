@@ -1,0 +1,27 @@
+{
+  "name": "@atek-cloud/api-broker",
+  "version": "0.0.1",
+  "description": "RPC routing toolset for the atek host environment.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atek-cloud/api-broker.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atek-cloud/api-broker/issues"
+  },
+  "homepage": "https://github.com/atek-cloud/api-broker#readme",
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "json-pointer": "^0.6.1"
+  }
+}
