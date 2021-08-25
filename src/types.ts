@@ -1,9 +1,10 @@
-// import { SomeJSONSchema } from './vendor/ajv.d.ts'
-import Ajv from './vendor/ajv.8.6.1.js'
+import Ajv, { ValidateFunction } from 'ajv'
+import addFormats from 'ajv-formats'
 const ajv = new Ajv({strict: false})
-import pointer from 'json-pointer'
+addFormats(ajv)
 
-export type SomeJSONSchema = object
+export { default as Ajv } from 'ajv'
+export type SomeJSONSchema = any // TODO ajv has a definition but it's been hard to work with
 
 export type ExportMap = {
   methods?: {
@@ -32,19 +33,27 @@ export interface HandlerFn {
   (callDesc: CallDescription, methodName: string, params: any[]): Promise<any>
 }
 
-export function getMethod (schema: SomeJSONSchema, exportMap: ExportMap, methodName: string): object | undefined {
+export function compileSchema (schema: SomeJSONSchema) {
+  const ajv = new Ajv({strict: false})
+  addFormats(ajv)
+  ajv.addSchema(schema)
+  return ajv
+}
+
+export function getMethod (ajv: Ajv, exportMap: ExportMap, methodName: string): {params: ValidateFunction, returns: ValidateFunction} | undefined {
   if (!exportMap?.methods?.[methodName]) {
     throw new MethodNotFound(`"${methodName}" is not a method of this api`)
   }
-  let ptr = exportMap?.methods?.[methodName]
-  if (ptr) {
-    if (ptr.startsWith('#')) ptr = ptr.slice(1)
-    return pointer.get(schema, ptr)
+  const ptr = exportMap?.methods?.[methodName]
+  if (ptr && ajv) {
+    return {
+      params: ajv.getSchema(`${ptr}/properties/params`),
+      returns: ajv.getSchema(`${ptr}/properties/returns`)
+    }
   }
 }
 
-export function assertParamsValid (schema: SomeJSONSchema, params: any[]): void {
-  const validate = ajv.compile(schema)
+export function assertParamsValid (validate: ValidateFunction, params: any[]): void {
   const valid = validate(params)
   if (!valid) {
     const msg = `Parameter ${Number(validate.errors[0].instancePath.slice(1)) + 1} ${validate.errors[0].message}`
@@ -52,8 +61,7 @@ export function assertParamsValid (schema: SomeJSONSchema, params: any[]): void 
   }
 }
 
-export function assertResponseValid (schema: SomeJSONSchema, response: any): void {
-  const validate = ajv.compile(schema)
+export function assertResponseValid (validate: ValidateFunction, response: any): void {
   const valid = validate(response)
   if (!valid) {
     const msg = `Response ${validate.errors[0].schemaPath.slice(2)} ${validate.errors[0].message}`
