@@ -1,6 +1,6 @@
 {
   "name": "@atek-cloud/api-broker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "RPC routing toolset for the atek host environment.",
   "main": "dist/index.js",
   "type": "module",
