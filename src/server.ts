@@ -10,7 +10,7 @@ export class ApiBrokerServer {
   exportMap: ExportMap|undefined
   handlers: ApiBrokerServerHandlers
 
-  constructor (schema: SomeJSONSchema|undefined, exportMap: ExportMap|undefined, handlers: ApiBrokerServerHandlers) {
+  constructor (handlers: ApiBrokerServerHandlers, schema: SomeJSONSchema|undefined, exportMap: ExportMap|undefined) {
     this.schema = schema
     this.ajv = schema ? compileSchema(schema) : undefined
     this.exportMap = exportMap
@@ -36,7 +36,6 @@ function generateServerMethods (ajv: Ajv|undefined, exportMap: ExportMap|undefin
         if (methodDef?.returns) assertResponseValid(methodDef.returns, response)
         return response
       } catch (e) {
-        console.log('failwhale', methodName, params)
         if (e instanceof ParamValidationError) throw e
         if (e instanceof ResponseValidationError) throw e
         throw new GeneralError(e.message || e.toString())
